@@ -76,20 +76,6 @@ function onError(error) {
   }
 }
 
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-// function onListening() {
-//   var addr = server.address();
-//   var bind = typeof addr === 'string'
-//     ? 'pipe ' + addr
-//     : 'port ' + addr.port;
-//   debug('Listening on ' + bind);
-// }
-
-// await db.sync();
-
 const init = async () => {
   // await models.db.sync(); //same as below
   //await db.sync();
@@ -97,7 +83,6 @@ const init = async () => {
 
   console.log(' finished syncing ');
 
-  //const port = 3000;
   server.listen(port, () => {
     console.log(`server listening on port ${port}`);
   });

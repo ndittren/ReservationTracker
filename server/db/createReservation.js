@@ -1,59 +1,62 @@
 const moment = require('moment');
 const {db, Reservations} = require('./models/index');
-
-// Reservation - Restaurant - Name -
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 
 const createReservation = async (message, twilioData) => {
   const [name, date, reservationTime] = message;
-  let phone = Number(twilioData.From.slice(1, twilioData.From.length));
-  //console.log(typeof phone);
-  const reservationDateUTC = moment(date, 'MM-DD-YYYY')
+  const reservationDate = moment(date, 'MM-DD-YYYY')
     .utc()
     .valueOf();
 
-  const parsedReservationTime = parseInt(reservationTime, 10);
-  //console.log(parsedReservationTime);
+  const parsedReservationTime = parseInt(reservationTime, 10) + 12;
   const reservationRecord = {
     name,
     time: parsedReservationTime,
-    phone,
-    date: reservationDateUTC
+    phone: twilioData.From,
+    date: reservationDate
   };
   const todaysDate = Date.now();
+  //const hoursToMS = 1000 * 60 * 60 * 24;
 
-  if (reservationDateUTC < todaysDate) {
-    //console.log('heeeeee');
+  const oneHour = 1;
+  const closingTime = 22;
+  const openingTime = 13;
+
+  if (reservationDate < todaysDate) {
     return `Looks like you made a mistake on the date. Can't make a reservation for a past date.`;
   }
-
-  const closingTime = 10;
-  const openingTime = 1;
-
+  console.log('this is parsedReservationtime', parsedReservationTime);
+  console.log(reservationRecord);
   if (
     parsedReservationTime < openingTime ||
-    parsedReservationTime > closingTime
+    parsedReservationTime >= closingTime
   ) {
-    //console.log('beeeee');
     return 'Sorry the restaurant is closed at that time.';
   }
 
   try {
-    await Reservations.create(reservationRecord);
-    // const findRes = await Reservations.findOne({
-    //   where: {
-    //     date: {
-    //       $eq: reservationDateUTC
-    //     }
-    //   }
-    // });
-    // console.log(findRes);
-    // if (findRes) {
-    //   return `Sorry, a reservation for ${reservationTime} has already been taken.`;
-    // } else {
-    // await Reservations.create(reservationRecord);
+    const takenReservation = await Reservations.findOne({
+      where: {
+        date: reservationDate,
+        [Op.or]: [
+          {time: {[Op.gte]: parsedReservationTime}},
+          {time: {[Op.lt]: parsedReservationTime + oneHour}}
+        ]
+      }
+    });
+    console.log('this is taken reservation', takenReservation);
+    if (takenReservation) {
+      return `Sorry, a reservation for ${reservationTime} has already been taken.`;
+    }
+
+    const newReservation = await Reservations.create(reservationRecord);
+
+    if (newReservation) {
+      return `Reservation at ${reservationTime} on ${date} confirmed.`;
+    }
+
     console.log(`Reservation at ${reservationTime} on ${date} confirmed.`);
-    return `Reservation at ${reservationTime} on ${date} confirmed.`;
-    // }
   } catch (error) {
     return `Sorry, there was an issue creating your reservation`;
   }

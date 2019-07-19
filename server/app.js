@@ -25,42 +25,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/reservations', reservationsRouter);
 
-/**
- *
- * Users will send us their restaurant inquiries in a format separated by " - "
- *
- * Format:
- * `RestaurantRequest - Name - Date - Time`
- * `RestaurantRequest - Restaurant`
- *
- * Examples:
- * Reservation format:
- * `Reserveration - Jane Doe - June 4, 2019 - 4pm`;
- *
- * Information about restaurant format:
- * `Information - Peter Luger`
- *
- */
-app.post('/sms', (req, res) => {
+app.post('/sms', async (req, res) => {
   const twiml = new MessagingResponse();
   const twilioData = req.body;
   const [restaurantRequest, ...message] = parseMessage(req.body.Body);
   const restaurantRequestLowerCase = restaurantRequest.toLowerCase();
-  let statusMessage;
-
-  if (restaurantRequestLowerCase === 'reservation')
-    statusMessage = createReservation(message, twilioData);
-
-  if (
-    restaurantRequestLowerCase === 'information' ||
-    restaurantRequestLowerCase === 'info'
-  )
-    statusMessage = getRestaurantInfo(message);
+  const statusMessage = await createReservation(message, twilioData);
 
   twiml.message(statusMessage);
   res.writeHead(200, {'Content-Type': 'text/xml'});
   res.end(twiml.toString());
 });
+
+// app.post('/slack', async (req, res) => {
+//   const text = await createReservation(parseMessage(req.body.text), req.body);
+//   res.status(200).json({text});
+// });
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
