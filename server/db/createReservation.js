@@ -17,8 +17,6 @@ const createReservation = async (message, twilioData) => {
     date: reservationDate
   };
   const todaysDate = Date.now();
-  //const hoursToMS = 1000 * 60 * 60 * 24;
-
   const oneHour = 1;
   const closingTime = 22;
   const openingTime = 13;
