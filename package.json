@@ -2,13 +2,10 @@
   "name": "react-backend",
   "version": "0.0.0",
   "private": true,
-  "engines": {
-    "node": "8.11.1"
-  },
   "scripts": {
-    "start": "PORT=3001 node ./server/bin/www",
-    "start:nodemon": "PORT=3001 nodemon ./server/bin/www",
-    "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build",
+    "start": "node ./server/bin/www",
+    "start-dev": "PORT=3001 nodemon ./server/bin/www",
+    "heroku-postbuild": "cd client && npm && npm run build",
     "test": "jest"
   },
   "dependencies": {
