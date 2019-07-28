@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "PORT=3001 nodemon ./bin/www"
+    "start": "node ./server/bin/www",
+    "start-dev": "PORT=3001 nodemon ./server/bin/www",
+    "heroku-postbuild": "cd client && yarn && yarn build"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -18,7 +20,11 @@
     "nodemon": "^1.19.1",
     "pg": "^7.11.0",
     "pg-hstore": "^2.3.3",
+    "pug": "^2.0.4",
     "sequelize": "^5.10.1",
     "twilio": "^3.33.1"
+  },
+  "devDependencies": {
+    "jshint": "^2.10.2"
   }
 }
